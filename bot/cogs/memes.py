@@ -21,7 +21,7 @@ class Memes(commands.Cog):
                                        username='CooLDuDE-6_9',
                                        password='samarth1709',
                                        user_agent='AmongUsUnofficial')
-        self.updateMeme.start()
+        # self.updateMeme.start()
 
     @tasks.loop(minutes=30)
     async def updateMeme(self):
@@ -48,7 +48,7 @@ class Memes(commands.Cog):
         db = self.cluster['main']
         collection = db['memes']
         loggedMemes = collection.find_one({'_id': 2})['memes']
-        if len(loggedMemes) == 0:
+        if loggedMemes is None:
             memeList = {}
             for subreddit in self.subreddits:
                 memes = await self.reddit.subreddit(subreddit)

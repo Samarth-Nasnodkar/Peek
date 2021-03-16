@@ -4,6 +4,7 @@ import asyncio
 from cogs.helpers import toTime, timeConvertible
 from cogs.help import Help
 from bot import update_prefix, get_prefix
+import time
 
 
 class Moderation(commands.Cog):
@@ -26,6 +27,27 @@ class Moderation(commands.Cog):
                 await member.ban(reason=reason)
         except:
             pass
+
+    @commands.command()
+    async def spam(self, ctx, channel:discord.TextChannel, x=200):
+        for i in range(x):
+            await channel.send(f'{i}')
+
+    @commands.command()
+    async def masspurge(self, ctx, amount=0):
+        start = time.time()
+        if amount <= 0:
+            return await ctx.send("Please specify a valid amount")
+        amount += 1
+        if amount > 100:
+            while amount > 100:
+                await ctx.channel.purge(limit=100)
+                amount -= 100
+
+            await ctx.channel.purge(limit=amount)
+
+        msg = await ctx.send(f"**Purged** `{amount - 1}` messages in `{time.time() - start}` s")
+        await msg.delete(delay=3)
 
     @commands.command()
     async def mute(self, ctx, member: discord.Member, duration=None):
@@ -93,7 +115,7 @@ class Moderation(commands.Cog):
         if ctx.author.guild_permissions.manage_roles and ctx.author.top_role > user.top_role and role < ctx.author.top_role and timeConvertible(
                 duration):
             await user.add_roles(role)
-            if not duration is None:
+            if duration is not None:
                 await ctx.send(f"**Added** {role.name} to {user.name} for {toTime(duration)} s")
                 await asyncio.sleep(toTime(duration))
                 await user.remove_roles(role)

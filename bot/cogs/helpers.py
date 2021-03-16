@@ -36,7 +36,8 @@ def openAccount(member_id):
     if not str(member_id) in accounts.keys():
         temp = {
             "wallet": 2000,
-            "bank": 0
+            "bank": 0,
+            "credits": 0
         }
         collection.update_one({"_id": 1}, {"$set": {str(member_id): temp}})
 
@@ -50,7 +51,8 @@ def accountExists(member_id):
 
 
 def balance(member_id):
-    if not accountExists(member_id): openAccount(member_id)
+    if not accountExists(member_id):
+        openAccount(member_id)
     db = cluster['main']
     collection = db['accounts']
     accounts = collection.find_one({'_id': 1})
@@ -125,6 +127,35 @@ async def showBagitems(ctx):
         color=discord.Color.orange()
     )
     await ctx.send(embed=embed)
+
+async def giftItem(ctx, user, item, amount=1):
+    db = cluster['main']
+    collection = db['accounts']
+    accounts = collection.find_one({'_id': 1})
+    if not 'bag' in accounts[str(ctx.author.id)].keys() or not item.lower() in accounts[str(ctx.author.id)]['bag'].keys():
+        return await ctx.send("You do not have enough items.")
+    if amount > accounts[str(ctx.author.id)]['bag'][item.lower()]:
+        return await ctx.send("You do not have enough items.")
+
+    if str(user.id) in accounts.keys():
+        if 'bag' in accounts[str(user.id)].keys():
+            if item.lower() in accounts[str(user.id)]['bag'].keys():
+                accounts[str(user.id)]['bag'][item.lower()] += amount
+            else:
+                accounts[str(user.id)]['bag'][item.lower()] = amount
+        else:
+            accounts[str(user.id)]['bag'] = {}
+            accounts[str(user.id)]['bag'][item.lower()] = amount
+    else:
+        openAccount(user.id)
+        accounts = collection.find_one({'_id': 1})
+        accounts[str(user.id)]['bag'] = {}
+        accounts[str(user.id)]['bag'][item.lower()] = amount
+
+    accounts[str(ctx.author.id)]['bag'][item.lower()] -= amount
+    collection.update_one({'_id': 1}, {'$set': {str(user.id): accounts[str(user.id)]}})
+    collection.update_one({'_id': 1}, {'$set': {str(ctx.author.id): accounts[str(ctx.author.id)]}})
+    await ctx.send(f"**{ctx.author.display_name}** gave **{user.display_name}** `{amount}` {item.lower()}")
 
 
 async def sellItem(ctx, item, amount=1):

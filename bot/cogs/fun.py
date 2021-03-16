@@ -8,17 +8,12 @@ class Fun(commands.Cog):
 
     @commands.command()
     async def pop(self, ctx, width=3):
-        if width > 6:
-            return await ctx.send("The size cannot exceed 6")
+        if width > 10:
+            return await ctx.send("The size cannot exceed 10")
         elif width <= 1:
             return await ctx.send('The size must be greater than 1')
         element = '||pop||'
-        content = ''
-        for i in range(width):
-            for j in range(width):
-                content += element
-            content += '\n'
-
+        content = (element*width + '\n')*width
         await ctx.send(content)
 
 

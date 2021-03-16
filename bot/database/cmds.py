@@ -37,6 +37,14 @@ eco = [
     {
         'name': 'heist <user>',
         'description': 'plans a group heist against the user. The reward is equally split among all heisters'
+    },
+    {
+        'name': 'credits <(buy/sell)> <amount>',
+        'description': 'lets you buy/sell the specified amount of credits. 1 coin = 3 credits'
+    },
+    {
+        'name': 'slots <amount>',
+        'description': 'lets you bet those credits. This can have some high returns'
     }
 ]
 
