@@ -1,6 +1,4 @@
-import json
 from database.mainshop import shop
-import pymongo
 from pymongo import MongoClient
 import discord
 
@@ -128,11 +126,26 @@ async def showBagitems(ctx):
     )
     await ctx.send(embed=embed)
 
+
+def leaderboardSort(accounts: list, method='wallet', reverse=False):
+    for i in range(len(accounts)):
+        for j in range(len(accounts) - i - 1):
+            if accounts[j][method] < accounts[j + 1][method]:
+                temp = accounts[j]
+                accounts[j] = accounts[j + 1]
+                accounts[j + 1] = temp
+    if reverse:
+        accounts.reverse()
+
+    return accounts
+
+
 async def giftItem(ctx, user, item, amount=1):
     db = cluster['main']
     collection = db['accounts']
     accounts = collection.find_one({'_id': 1})
-    if not 'bag' in accounts[str(ctx.author.id)].keys() or not item.lower() in accounts[str(ctx.author.id)]['bag'].keys():
+    if not 'bag' in accounts[str(ctx.author.id)].keys() or not item.lower() in accounts[str(ctx.author.id)][
+        'bag'].keys():
         return await ctx.send("You do not have enough items.")
     if amount > accounts[str(ctx.author.id)]['bag'][item.lower()]:
         return await ctx.send("You do not have enough items.")

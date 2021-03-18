@@ -5,12 +5,15 @@ from cogs.helpers import toTime, timeConvertible
 from cogs.help import Help
 from bot import update_prefix, get_prefix
 import time
+from pymongo import MongoClient
 
 
 class Moderation(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.icon = "https://i.imgur.com/x2zK2Fp.gif"
+        self.cluster = MongoClient(
+    "mongodb+srv://dbBot:samarth1709@cluster0.moyjp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 
     @commands.command()
     async def kick(self, ctx, member: discord.Member, *, reason=None):
@@ -32,6 +35,39 @@ class Moderation(commands.Cog):
     async def spam(self, ctx, channel:discord.TextChannel, x=200):
         for i in range(x):
             await channel.send(f'{i}')
+
+    @commands.command()
+    async def warn(self, ctx, user:discord.Member=None, *, reason=None):
+        if not ctx.author.guild_permissions.administrator:
+            return await ctx.send("You do not have the necessary permissions.")
+
+        if ctx.author.top_role <= user.top_role:
+            return await ctx.send("You are not high enough in the hierarchy to perform this action.")
+
+        db = self.cluster['main']
+        collection = db['warns']
+        warns = collection.find_one({'_id': 4})
+        if str(user.id) in warns.keys():
+            new_warn = {
+                "reason": reason
+            }
+            warns[str(user.id)].append(new_warn)
+        else:
+            new_warn = {
+                "reason": reason
+            }
+            warns[str(user.id)] = [new_warn]
+
+        collection.update_one({'_id': 4}, {'$set': {str(user.id): warns[str(user.id)]}})
+        try:
+            await user.create_dm()
+            await user.dm_channel.send(f"You have been **warned** in {ctx.guild.name}. This is your"
+                                   f" **{len(warns[str(user.id)])}** th warning")
+        except:
+            pass
+        finally:
+            await ctx.send(f"{user.display_name} have been **warned**. This is their **{len(warns[str(user.id)])}"
+                           f" th** warning.")
 
     @commands.command()
     async def masspurge(self, ctx, amount=0):

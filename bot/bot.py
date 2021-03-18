@@ -34,8 +34,8 @@ def update_prefix(prefix, guild_id):
         collection.update_one({'_id': 0}, {'$set': {str(guild_id): prefix}})
         return True
 
-
-client = commands.Bot(command_prefix=get_prefix, case_insensitive=True)
+intents = discord.Intents.all()
+client = commands.Bot(command_prefix=get_prefix, intents=intents, case_insensitive=True)
 client.remove_command('help')
 
 

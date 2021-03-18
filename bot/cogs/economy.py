@@ -5,15 +5,16 @@ from datetime import datetime
 import random
 from database.mainshop import shop
 import asyncio
+from models.item import Item
 from pymongo import MongoClient
-import time
+from models.errors import *
 
 
 class Economy(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.cluster = MongoClient(
-    "mongodb+srv://dbBot:samarth1709@cluster0.moyjp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+            "mongodb+srv://dbBot:samarth1709@cluster0.moyjp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 
     @commands.command()
     async def market(self, ctx, search=""):
@@ -153,7 +154,7 @@ class Economy(commands.Cog):
         description = ""
         url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
         for item in shop:
-            description += f"{item['emoji']}**{item['name']}** - [⏣ {item['price']}]({url})\n"
+            description += f"{item.emoji}**{item.name}** - [⏣ {item.price}]({url})\n"
 
         embed = discord.Embed(
             title="*__Shop Items__*",
@@ -166,18 +167,69 @@ class Economy(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 15, commands.BucketType.user)
     async def buy(self, ctx, item, amount=1):
-        transaction = await purchase(ctx.author.id, item, amount)
-        if transaction: return await ctx.send(f"Successfully purchased `{amount}` {item.lower()}")
-        return await ctx.send('Purchase failed.')
+        # transaction = await purchase(ctx.author.id, item, amount)
+        # if transaction: return await ctx.send(f"Successfully purchased `{amount}` {item.lower()}")
+        # return await ctx.send('Purchase failed.')
+        if amount <= 0:
+            return await ctx.send("Please specify a valid amount")
+        found = False
+        for thing in shop:
+            if thing.name.lower() == item.lower():
+                found = True
+                try:
+                    thing.buy(ctx.author.id, amount)
+                except NotEnoughBalanceError:
+                    return await ctx.send(f"You do not have enough credits to buy this item.")
+                else:
+                    await ctx.send(f"You successfully purchased `{amount}` **{item[:1].upper() + item[1:].lower()}**")
+                    break
+
+        if not found:
+            await ctx.send("Please specify a valid item")
 
     @commands.command(aliases=['inv', 'inventory'])
     async def bag(self, ctx):
-        await showBagitems(ctx)
+        db = self.cluster['main']
+        collection = db['accounts']
+        accounts = collection.find_one({'_id': 1})
+        if str(ctx.author.id) not in accounts.keys():
+            openAccount(ctx.author.id)
+            return await ctx.send("You do not own any items\n")
+        if 'bag' not in accounts[str(ctx.author.id)].keys():
+            return await ctx.send("You do not own any items\n")
+        des = f'**{ctx.author.display_name}\'s Bag**\n\n'
+        for thing in accounts[str(ctx.author.id)]['bag']:
+            item = Item(dict_form=accounts[str(ctx.author.id)]['bag'][thing])
+            des += f"{item.emoji} **{item.name} ─ ** {item.amount}\n*ID* `{item.name}` **─** Sellable\n\n"
+
+        embed = discord.Embed(
+            description=des,
+            color=discord.Color.orange()
+        )
+        await ctx.send(embed=embed)
 
     @commands.command()
     @commands.cooldown(1, 15, commands.BucketType.user)
     async def sell(self, ctx, item, amount=1):
-        await sellItem(ctx, item, amount)
+        # await sellItem(ctx, item, amount)
+        db = self.cluster['main']
+        collection = db['accounts']
+        accounts = collection.find_one({'_id': 1})
+        if str(ctx.author.id) not in accounts.keys():
+            openAccount(ctx.author.id)
+            return await ctx.send("You do not own any items.")
+        if 'bag' not in accounts[str(ctx.author.id)].keys():
+            return await ctx.send("You do no own any items.")
+        items = accounts[str(ctx.author.id)]['bag']
+        for thing in items:
+            temp = Item(dict_form=items[thing])
+            if temp.name.lower() == item.lower():
+                try:
+                    temp.sell(amount)
+                except NotEnoughItemsError:
+                    return await ctx.send("You do no own enough items.")
+                else:
+                    return await ctx.send(f"Successfully **sold** `{amount}` {temp.name}")
 
     @commands.command(aliases=['deposit'])
     @commands.cooldown(1, 10, commands.BucketType.user)
@@ -305,6 +357,29 @@ class Economy(commands.Cog):
 
         if not found:
             await ctx.send("Please specify a valid item")
+
+    @commands.command(aliases=['leaderboard', 'top', 'rich'])
+    async def lb(self, ctx, method="wallet"):
+        db = self.cluster['main']
+        collection = db['accounts']
+        accounts = collection.find_one({'_id': 1})
+        acc_list = []
+        for member in ctx.guild.members:
+            if str(member.id) in accounts.keys():
+                accounts[str(member.id)]['name'] = member.name
+                acc_list.append(accounts[str(member.id)])
+
+        acc_list = leaderboardSort(acc_list, method)
+        des = f'**Richest** users in {ctx.guild.name}\n'
+        for i in range(len(acc_list)):
+            des += f"{i + 1}. **{acc_list[i]['name']} -** {acc_list[i]['wallet']}\n"
+
+        embed = discord.Embed(
+            description=des,
+            color=discord.Color.orange()
+        )
+
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def heist(self, ctx, user: discord.Member = None):
