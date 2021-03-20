@@ -45,6 +45,22 @@ eco = [
     {
         'name': 'slots <amount>',
         'description': 'lets you bet those credits. This can have some high returns'
+    },
+    {
+        'name': 'bet <amount> <number(between 1 and 17)>',
+        'description': "if your number is lucky, you win money, else lose it"
+    },
+    {
+        'name': 'auction <item> <price>',
+        'description': 'puts the item up for auction'
+    },
+    {
+        'name': 'market',
+        'description': 'shows all the items put up in the auction'
+    },
+    {
+        'name': 'remove <item id>',
+        'description': 'removes your item from the market'
     }
 ]
 

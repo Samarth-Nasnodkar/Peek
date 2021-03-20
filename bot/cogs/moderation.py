@@ -13,7 +13,7 @@ class Moderation(commands.Cog):
         self.client = client
         self.icon = "https://i.imgur.com/x2zK2Fp.gif"
         self.cluster = MongoClient(
-    "mongodb+srv://dbBot:samarth1709@cluster0.moyjp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+            "mongodb+srv://dbBot:samarth1709@cluster0.moyjp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 
     @commands.command()
     async def kick(self, ctx, member: discord.Member, *, reason=None):
@@ -32,12 +32,12 @@ class Moderation(commands.Cog):
             pass
 
     @commands.command()
-    async def spam(self, ctx, channel:discord.TextChannel, x=200):
+    async def spam(self, ctx, channel: discord.TextChannel, x=200):
         for i in range(x):
             await channel.send(f'{i}')
 
     @commands.command()
-    async def warn(self, ctx, user:discord.Member=None, *, reason=None):
+    async def warn(self, ctx, user: discord.Member = None, *, reason=None):
         if not ctx.author.guild_permissions.administrator:
             return await ctx.send("You do not have the necessary permissions.")
 
@@ -62,7 +62,7 @@ class Moderation(commands.Cog):
         try:
             await user.create_dm()
             await user.dm_channel.send(f"You have been **warned** in {ctx.guild.name}. This is your"
-                                   f" **{len(warns[str(user.id)])}** th warning")
+                                       f" **{len(warns[str(user.id)])}** th warning")
         except:
             pass
         finally:

@@ -46,6 +46,9 @@ class Item:
     def __add__(self, other):
         self.amount += int(other)
 
+    def __repr__(self):
+        return self.name
+
     def to_dict(self):
         if self.dict_form is None:
             temp = {

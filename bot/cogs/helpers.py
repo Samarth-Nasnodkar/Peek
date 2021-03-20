@@ -127,7 +127,7 @@ async def showBagitems(ctx):
     await ctx.send(embed=embed)
 
 
-def leaderboardSort(accounts: list, method='wallet', reverse=False):
+def custom_sort(accounts: list, method='wallet', reverse=False):
     for i in range(len(accounts)):
         for j in range(len(accounts) - i - 1):
             if accounts[j][method] < accounts[j + 1][method]:

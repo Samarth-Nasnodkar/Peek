@@ -28,9 +28,8 @@ class Economy(commands.Cog):
             for item in items:
                 item_models = market['items'][item]
                 for i in range(len(item_models)):
-                    for thing in shop:
-                        if thing['name'] == item:
-                            content += f"{thing['emoji']} **{item}   |**  price: `{item_models[i]['price']}`  **|**  No: `{item_models[i]['id']}`\n"
+                    item_model = Item(dict_form=item_models[i])
+                    content += f"{item_model.emoji} **{item_model}   |**  price: `{item_model.price}`  **|**  No: `{item_model.item_id}`\n"
 
             embed = discord.Embed(
                 description=content,
@@ -51,13 +50,13 @@ class Economy(commands.Cog):
         for item in list(items.keys()):
             i = 0
             while i < len(items[item]):
-                if items[item][i]['id'] == item_id and items[item][i]['owner'] == ctx.author.id:
+                if items[item][i]['item_id'] == item_id and items[item][i]['owner'] == ctx.author.id:
                     item_name = item
-                    if item not in itemCollection[str(ctx.author.id)]['bag']:
-                        itemCollection[str(ctx.author.id)]['bag'][item] = 1
+                    if item not in itemCollection[str(ctx.author.id)]['bag'].keys():
+                        itemCollection[str(ctx.author.id)]['bag'][item]['amount'] = 1
                         items[item].pop(i)
                     else:
-                        itemCollection[str(ctx.author.id)]['bag'][item] += 1
+                        itemCollection[str(ctx.author.id)]['bag'][item]['amount'] += 1
                         items[item].pop(i)
 
                 i += 1
@@ -80,21 +79,17 @@ class Economy(commands.Cog):
             return await ctx.send("You don't own any items.")
         user_bal = accounts[str(ctx.author.id)]
         for thing in shop:
-            if thing['name'] == item.lower():
+            if thing.name.lower() == item.lower():
                 if 'bag' not in user_bal.keys():
                     return await ctx.send("You don't own any items.")
                 if item.lower() not in user_bal['bag'].keys():
                     return await ctx.send("You don't this item.")
-                if user_bal['bag'][item.lower()] < 1:
+                if user_bal['bag'][item.lower()]['amount'] < 1:
                     return await ctx.send("You don't own this item.")
                 market = db['market'].find_one({'_id': 3})
                 item_id = random.randint(600000000000000000, 999999999999999999)
-                item_model = {
-                    'owner': ctx.author.id,
-                    'id': item_id,
-                    'type': item.lower(),
-                    'price': int(price)
-                }
+                item_model = Item(name=item.lower(), emoji=thing.emoji, item_id=item_id, price=int(price),
+                                  owner=ctx.author.id).to_dict()
                 if 'items' not in market.keys():
                     market['items'] = {}
                 if item.lower() in market['items'].keys():
@@ -104,10 +99,10 @@ class Economy(commands.Cog):
                 collection = db['market']
                 collection.update_one({'_id': 3}, {'$set': {'items': market['items']}})
                 collection = db['accounts']
-                if user_bal['bag'][item.lower()] == 1:
+                if user_bal['bag'][item.lower()]['amount'] == 1:
                     del user_bal['bag'][item.lower()]
                 else:
-                    user_bal['bag'][item.lower()] -= 1
+                    user_bal['bag'][item.lower()]['amount'] -= 1
                 collection.update_one({'_id': 1}, {'$set': {str(ctx.author.id): user_bal}})
                 await ctx.send(f"Your {item.lower()} has been **uploaded** to the market for `{int(price)}` coins.")
 
@@ -351,9 +346,37 @@ class Economy(commands.Cog):
             return await ctx.send("Please specify a valid amount")
         found = False
         for thing in shop:
-            if thing['name'] == item.lower():
+            if thing.name.lower() == item.lower():
                 found = True
-                await giftItem(ctx, user, item, amount)
+                db = self.cluster['main']
+                collection = db['accounts']
+                accounts = collection.find_one({'_id': 1})
+                if str(ctx.author.id) not in accounts.keys():
+                    openAccount(ctx.author.id)
+                    return await ctx.send("You do not own wny items, Please buy some and try again.")
+                if 'bag' not in accounts[str(ctx.author.id)].keys():
+                    return await ctx.send("You do not own wny items, Please buy some and try again.")
+                if item.lower() not in accounts[str(ctx.author.id)]['bag'].keys():
+                    return await ctx.send("You do not own this item, Please buy some and try again.")
+                item_model = Item(dict_form=accounts[str(ctx.author.id)]['bag'][item.lower()])
+                if item_model.amount < amount:
+                    return await ctx.send("You do not own enough of these items, Please buy some more and try again.")
+                item_model - amount
+                if str(user.id) not in accounts.keys():
+                    openAccount(user.id)
+                if 'bag' not in accounts[str(user.id)].keys():
+                    accounts[str(user.id)]['bag'] = {}
+                item_id = random.randint(600000000000000000, 999999999999999999)
+                temp_item_model = Item(item_model.name.lower(), item_model.emoji, item_id, amount, item_model.price,
+                                       user.id).to_dict()
+                accounts[str(user.id)]['bag'][item_model.name.lower()] = temp_item_model
+                if item_model.amount == 0:
+                    del accounts[str(ctx.author.id)]['bag'][item_model.name.lower()]
+                else:
+                    accounts[str(ctx.author.id)]['bag'][item_model.name.lower()] = item_model.to_dict()
+                collection.update_one({'_id': 1}, {'$set': {str(user.id): accounts[str(user.id)]}})
+                collection.update_one({'_id': 1}, {'$set': {str(ctx.author.id): accounts[str(ctx.author.id)]}})
+                await ctx.send(f"You **gave** {user.display_name} `{amount}` **{item_model}**")
 
         if not found:
             await ctx.send("Please specify a valid item")
@@ -369,7 +392,7 @@ class Economy(commands.Cog):
                 accounts[str(member.id)]['name'] = member.name
                 acc_list.append(accounts[str(member.id)])
 
-        acc_list = leaderboardSort(acc_list, method)
+        acc_list = custom_sort(acc_list, method)
         des = f'**Richest** users in {ctx.guild.name}\n'
         for i in range(len(acc_list)):
             des += f"{i + 1}. **{acc_list[i]['name']} -** {acc_list[i]['wallet']}\n"
@@ -433,6 +456,48 @@ class Economy(commands.Cog):
 
             await updateBalance(user.id, amount=2000 * len(heisters))
             return await ctx.send("Heist failed.\n**F**")
+
+    @commands.command()
+    async def bet(self, ctx, amount="", number=0):
+        if amount == "":
+            return await ctx.send("Please enter a valid amount.")
+
+        if number <= 0:
+            return await ctx.send("Please enter a valid number. It should be between 1 and 17.")
+
+        db = self.cluster['main']
+        collection = db['accounts']
+        accounts = collection.find_one({'_id': 1})
+        if str(ctx.author.id) not in accounts.keys():
+            openAccount(ctx.author.id)
+            return await ctx.send("You currently don't own any casino credits, "
+                                  "please buy some using the credit command.")
+        if accounts[str(ctx.author.id)]['credits'] == 0:
+            return await ctx.send(
+                "You currently don't own any casino credits, please buy some using the credit command.")
+        creds = 0
+        if amount.lower() == "all":
+            creds = accounts[str(ctx.author.id)]['credits']
+        else:
+            try:
+                creds = int(amount)
+            except ValueError:
+                return await ctx.send("Please enter a valid amount")
+            else:
+                if creds > accounts[str(ctx.author.id)]['credits']:
+                    return await ctx.send("You do not have enough credits. Please buy some using the credits command.")
+
+        lucky_number = random.randint(0, 17)
+        if lucky_number == number:
+            await ctx.send(f"The drawn number is **{lucky_number}**")
+            accounts[str(ctx.author.id)]['credits'] += int(0.8 * creds)
+            await ctx.send(f"You won **{int(0.8 * creds)}** credits. :partying_face:")
+        else:
+            await ctx.send(f"The drawn number is **{lucky_number}**")
+            accounts[str(ctx.author.id)]['credits'] -= creds
+            await ctx.send(f"You lost **{creds}** credits. Better luck next time.")
+
+        collection.update_one({'_id': 1}, {'$set': {str(ctx.author.id): accounts[str(ctx.author.id)]}})
 
     @commands.command()
     async def slots(self, ctx, amount=""):
@@ -503,11 +568,11 @@ class Economy(commands.Cog):
         if mode.lower() == 'buy':
             await updateBalance(ctx.author.id, amount=-1 * int(amount / 3))
             await updateBalance(ctx.author.id, mode="credits", amount=amount)
-            await ctx.send(f"You successfully purchased `{amount}` coins.")
+            await ctx.send(f"You successfully purchased `{amount}` credits.")
         elif mode.lower() == 'sell':
             await updateBalance(ctx.author.id, amount=int(amount / 3))
             await updateBalance(ctx.author.id, mode="credits", amount=-1 * amount)
-            await ctx.send(f"You successfully sold `{amount}` coins.")
+            await ctx.send(f"You successfully sold `{amount}` credits.")
 
 
 def setup(client):
