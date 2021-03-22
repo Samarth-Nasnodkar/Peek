@@ -1,5 +1,4 @@
 import discord
-from discord.ext import commands
 
 eco = [
     {
@@ -51,16 +50,12 @@ eco = [
         'description': "if your number is lucky, you win money, else lose it"
     },
     {
-        'name': 'auction <item> <price>',
-        'description': 'puts the item up for auction'
-    },
-    {
-        'name': 'market',
+        'name': 'market <arg(add/remove/buy/search)(optional)> <price/search term>',
         'description': 'shows all the items put up in the auction'
     },
     {
-        'name': 'remove <item id>',
-        'description': 'removes your item from the market'
+        'name': 'trade <user>',
+        'description': 'trade with other users to get some goods for cheap'
     }
 ]
 
@@ -84,6 +79,26 @@ mod = [
     {
         "name": "purge <amount>",
         "description": "Deletes the specified number of messages"
+    },
+    {
+        "name": "role <user> <role>",
+        "description": "Adds the role if not present, removes it if present"
+    },
+    {
+        "name": "temprole <user> <role> <duration>",
+        "description": "Adds the role to the user for the specified time.duration should end with either s/hr/h/min"
+    },
+    {
+        "name": "masspurge <amount>",
+        "description": "To delete more than 100 messages"
+    },
+    {
+        "name": "warn <user> <reason(optional)>",
+        "description": "Warns the user"
+    },
+    {
+        "name": "prefix <new prefix>",
+        "description": "Changes the prefix to new prefix"
     }
 ]
 
@@ -176,14 +191,6 @@ memes = [
 
 cmdList = [eco, mod, memes]
 
-
-# def fetch_prefix(server_id):
-#     db = cluster["main"]
-#     collection = db["entry"]  
-#     prefixes = collection.find_one({"_id" : 0})
-#     if prefixes is None: return "$"
-#     elif str(server_id) in prefixes.keys() : return prefixes[str(server_id)]
-#     return "$"
 
 def getDesc(ind, prefix):
     f = cmdList[ind]

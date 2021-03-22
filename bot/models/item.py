@@ -1,5 +1,5 @@
 from models.errors import *
-import pymongo
+import discord
 from pymongo import MongoClient
 import random
 
@@ -74,6 +74,30 @@ class Item:
                 del accounts[str(self.owner)]['bag'][self.name.lower()]
             accounts[str(self.owner)]['wallet'] += int(self.price * 0.6 * quantity)
             collection.update_one({'_id': 1}, {'$set': {str(self.owner): accounts[str(self.owner)]}})
+
+    def transfer(self, receiver: discord.Member, amount=1):
+        db = cluster['main']['accounts']
+        accounts = db.find_one({'_id': 1})
+        try:
+            accounts[str(self.owner)]['bag'][self.name.lower()]['amount'] -= amount
+            if self.name.lower() not in accounts[str(receiver.id)]['bag']:
+                df = self.to_dict()
+                df['item_id'] = random.randint(600000000000000000, 999999999999999999)
+                df['amount'] = amount
+                accounts[str(receiver.id)]['bag'][self.name.lower()] = df
+            else:
+                accounts[str(receiver.id)]['bag'][self.name.lower()]['amount'] += amount
+        except:
+            raise NotEnoughItemsError
+        else:
+            if accounts[str(self.owner)]['bag'][self.name.lower()]['amount'] < 0:
+                raise NotEnoughItemsError
+            else:
+                if accounts[str(self.owner)]['bag'][self.name.lower()]['amount'] == 0:
+                    del accounts[str(self.owner)]['bag'][self.name.lower()]
+
+                db.update_one({'_id': 1}, {'$set': {str(receiver.id): accounts[str(receiver.id)]}})
+                db.update_one({'_id': 1}, {'$set': {str(self.owner): accounts[str(self.owner)]}})
 
     def buy(self, owner_id, quantity=1):
         db = cluster['main']

@@ -1,8 +1,5 @@
 import discord
 from discord.ext import commands
-import json
-from os import environ
-import pymongo
 from pymongo import MongoClient
 
 cluster = MongoClient(
@@ -33,6 +30,7 @@ def update_prefix(prefix, guild_id):
     else:
         collection.update_one({'_id': 0}, {'$set': {str(guild_id): prefix}})
         return True
+
 
 intents = discord.Intents.all()
 client = commands.Bot(command_prefix=get_prefix, intents=intents, case_insensitive=True)

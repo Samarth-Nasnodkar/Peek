@@ -18,6 +18,18 @@ class Fun(commands.Cog):
         await ctx.send(content)
 
     @commands.command()
+    async def scramble(self, ctx, phrase):
+        phrase = list(phrase)
+        limit = len(phrase)
+        scrambled = ''
+        while len(scrambled) < limit:
+            random_index = random.randint(0, len(phrase) - 1)
+            scrambled += phrase[random_index]
+            phrase.pop(random_index)
+
+        await ctx.send(f"**{scrambled}**")
+
+    @commands.command(aliases=['pick'])
     async def choose(self, ctx, *options):
         options = list(options)
         run = True

@@ -1,11 +1,52 @@
 from database.mainshop import shop
 from pymongo import MongoClient
 import discord
+import random
+from models.item import Item
 
 cluster = MongoClient(
     "mongodb+srv://dbBot:samarth1709@cluster0.moyjp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 
-currencyPath = "database/currency.json"
+
+async def auction(ctx, item="", price=0):
+    if item == "":
+        return await ctx.send("Please specify an item")
+    if price <= 0:
+        return await ctx.send("Please specify a valid price")
+    db = cluster['main']
+    collection = db['accounts']
+    accounts = collection.find_one({'_id': 1})
+    if not str(ctx.author.id) in accounts.keys():
+        openAccount(ctx.author.id)
+        return await ctx.send("You don't own any items.")
+    user_bal = accounts[str(ctx.author.id)]
+    for thing in shop:
+        if thing.name.lower() == item.lower():
+            if 'bag' not in user_bal.keys():
+                return await ctx.send("You don't own any items.")
+            if item.lower() not in user_bal['bag'].keys():
+                return await ctx.send("You don't this item.")
+            if user_bal['bag'][item.lower()]['amount'] < 1:
+                return await ctx.send("You don't own this item.")
+            market = db['market'].find_one({'_id': 3})
+            item_id = random.randint(600000000000000000, 999999999999999999)
+            item_model = Item(name=item.lower(), emoji=thing.emoji, item_id=item_id, price=int(price),
+                              owner=ctx.author.id).to_dict()
+            if 'items' not in market.keys():
+                market['items'] = {}
+            if item.lower() in market['items'].keys():
+                market['items'][item.lower()].append(item_model)
+            else:
+                market['items'][item.lower()] = [item_model]
+            collection = db['market']
+            collection.update_one({'_id': 3}, {'$set': {'items': market['items']}})
+            collection = db['accounts']
+            if user_bal['bag'][item.lower()]['amount'] == 1:
+                del user_bal['bag'][item.lower()]
+            else:
+                user_bal['bag'][item.lower()]['amount'] -= 1
+            collection.update_one({'_id': 1}, {'$set': {str(ctx.author.id): user_bal}})
+            await ctx.send(f"Your {item.lower()} has been **uploaded** to the market for `{int(price)}` coins.")
 
 
 def toTime(x: str):

@@ -32,11 +32,6 @@ class Moderation(commands.Cog):
             pass
 
     @commands.command()
-    async def spam(self, ctx, channel: discord.TextChannel, x=200):
-        for i in range(x):
-            await channel.send(f'{i}')
-
-    @commands.command()
     async def warn(self, ctx, user: discord.Member = None, *, reason=None):
         if not ctx.author.guild_permissions.administrator:
             return await ctx.send("You do not have the necessary permissions.")

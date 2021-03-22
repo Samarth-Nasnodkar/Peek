@@ -8,6 +8,7 @@ import asyncio
 from models.item import Item
 from pymongo import MongoClient
 from models.errors import *
+from models.trade import Trade
 
 
 class Economy(commands.Cog):
@@ -16,28 +17,273 @@ class Economy(commands.Cog):
         self.cluster = MongoClient(
             "mongodb+srv://dbBot:samarth1709@cluster0.moyjp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 
-    @commands.command()
-    async def market(self, ctx, search=""):
-        if search == "":
-            db = self.cluster['main']
-            collection = db['market']
-            market = collection.find_one({'_id': 3})
-            items = list(market['items'].keys())
-            items.sort()
-            content = '**Global Market**\n\n'
-            for item in items:
-                item_models = market['items'][item]
-                for i in range(len(item_models)):
-                    item_model = Item(dict_form=item_models[i])
-                    content += f"{item_model.emoji} **{item_model}   |**  price: `{item_model.price}`  **|**  No: `{item_model.item_id}`\n"
+    @commands.command(aliases=['m'])
+    async def market(self, ctx, arg="search", search="", price=0):
+        if arg.lower() == "search":
+            if search == "":
+                db = self.cluster['main']
+                collection = db['market']
+                market = collection.find_one({'_id': 3})
+                items = list(market['items'].keys())
+                items.sort()
+                content = '**Global Market**\n\n'
+                for item in items:
+                    item_models = market['items'][item]
+                    for i in range(len(item_models)):
+                        item_model = Item(dict_form=item_models[i])
+                        content += f"{item_model.emoji} **{item_model}   |**  price: `{item_model.price}`  **|**  No:" \
+                                   f" `{item_model.item_id}`\n"
 
+                embed = discord.Embed(
+                    description=content,
+                    color=discord.Color.orange()
+                )
+                await ctx.send(embed=embed)
+            else:
+                db = self.cluster['main']
+                collection = db['market']
+                market = collection.find_one({'_id': 3})
+                items = list(market['items'].keys())
+                if search.lower() not in items:
+                    for _model in shop:
+                        if _model.name.lower() == search.lower():
+                            return await ctx.send(f"No **{_model}** in the shop right now.")
+
+                    return await ctx.send("Please enter a valid item.")
+                content = f'**Search results for {search[:1].upper() + search[1:].lower()}**\n\n'
+                item_models = market['items'][search.lower()]
+                for _model in item_models:
+                    item_model = Item(dict_form=_model)
+                    content += f"{item_model.emoji} **{item_model}   |**  price: `{item_model.price}`  **|**  No:" \
+                               f" `{item_model.item_id}`\n"
+                embed = discord.Embed(
+                    description=content,
+                    color=discord.Color.orange()
+                )
+                await ctx.send(embed=embed)
+        elif arg.lower() == "add" or arg.lower() == "a":
+            await auction(ctx, search.lower(), price)
+        elif arg.lower() == "remove" or arg.lower() == "r":
+            try:
+                await self.remove(ctx, item_id=int(search))
+            except ValueError:
+                await ctx.send("Please enter a valid item id")
+
+    @commands.command()
+    async def trade(self, ctx, user: discord.Member = None):
+        if user is None:
+            return await ctx.send("Please specify a valid user.")
+
+        await ctx.send(f"{user.mention} Do you accept the trade?")
+        yn = ['yes', 'no']
+
+        def trade_accept(message):
+            return message.channel == ctx.channel and message.author == user and message.content.lower() in yn
+
+        try:
+            msg = await self.client.wait_for('message', timeout=30.0, check=trade_accept)
+        except asyncio.TimeoutError:
+            return await ctx.send(f"{user.mention} You did not respond in 30s, trade ended.")
+        else:
+            if msg.content.lower() == 'no':
+                return await ctx.send("Trade ended.")
+
+            author_trade = Trade(ctx.author)
+            user_trade = Trade(user)
+            des = f"Initiate the trade by adding an item or money\n`>coin (amount) ➜ To add coins` or\n" \
+                  f"`>cred (amount) ➜ To add credits` or\n `>item (name) (amount) ➜ To add item.[Amount defaults to 1]`" \
+                  f"\nConfirm the trade using `>confirm`"
             embed = discord.Embed(
-                description=content,
+                title=f"Trade between {ctx.author.display_name} and {user.display_name}",
+                description=des,
                 color=discord.Color.orange()
             )
-            await ctx.send(embed=embed)
+            emb = await ctx.send(embed=embed)
+            db = self.cluster['main']['accounts']
+            collection = db.find_one({'_id': 1})
+            if str(user.id) not in collection.keys():
+                openAccount(user.id)
+            if str(ctx.author.id) not in collection.keys():
+                openAccount(ctx.author.id)
 
-    @commands.command()
+            def trading_cmds(message):
+                return message.channel == ctx.channel and (message.author == user or message.author == ctx.author) and (
+                        message.content.startswith('>cred') or message.content.startswith(
+                    '>item') or message.content.startswith('>coin') or message.content.startswith('>confirm'))
+
+            while True:
+                try:
+                    msg = await self.client.wait_for('message', timeout=30.0, check=trading_cmds)
+                except asyncio.TimeoutError:
+                    return await ctx.send(f"You took too long to add items. Trade ended.")
+                else:
+                    if msg.content.startswith('>confirm'):
+                        if msg.author == ctx.author:
+                            if author_trade.confirmed:
+                                await ctx.send("You have already confirmed the trade.")
+                            else:
+                                author_trade.confirm()
+                        else:
+                            if user_trade.confirmed:
+                                await ctx.send("You have already confirmed the trade.")
+                            else:
+                                user_trade.confirm()
+                    else:
+                        proceed = True
+                        if msg.author == ctx.author:
+                            if author_trade.confirmed:
+                                proceed = False
+                        elif msg.author == user:
+                            if user_trade.confirmed:
+                                proceed = False
+                        if proceed:
+                            content = msg.content.lower()
+                            if content.startswith('>cred'):
+                                try:
+                                    amount = int(content[5:])
+                                except ValueError:
+                                    await ctx.send("Please specify a valid amount")
+                                else:
+                                    if amount > collection[str(msg.author.id)]['credits']:
+                                        await ctx.send("You do not have this much money. Enter a valid amount")
+                                    else:
+                                        if msg.author == ctx.author:
+                                            author_trade.add_credits(amount)
+                                        else:
+                                            user_trade.add_credits(amount)
+                            elif content.startswith('>coin'):
+                                try:
+                                    amount = int(content[5:])
+                                except ValueError:
+                                    await ctx.send("Please specify a valid amount")
+                                else:
+                                    if amount > collection[str(msg.author.id)]['wallet']:
+                                        await ctx.send("You do not have this much money. Enter a valid amount")
+                                    else:
+                                        if msg.author == ctx.author:
+                                            author_trade.add_coins(amount)
+                                        else:
+                                            user_trade.add_coins(amount)
+                            elif content.startswith('>item'):
+                                try:
+                                    words = content.split()
+                                    if len(words) == 3:
+                                        item_name = words[1]
+                                        item_amount = int(words[2])
+                                    else:
+                                        item_name = words[1]
+                                        item_amount = 1
+                                except ValueError:
+                                    await ctx.send("Please specify a valid amount")
+                                else:
+                                    try:
+                                        if 'bag' not in collection[str(msg.author.id)].keys():
+                                            await ctx.send('You do no own this item')
+                                            raise NotEnoughItemsError
+                                        if item_name.lower() not in collection[str(msg.author.id)]['bag'].keys():
+                                            await ctx.send('You do no own this item')
+                                            raise NotEnoughItemsError
+                                        item_model = Item(
+                                            dict_form=collection[str(msg.author.id)]['bag'][item_name.lower()])
+                                        temp = 0
+                                        if msg.author == ctx.author:
+                                            for _model in author_trade.items:
+                                                if _model.name.lower() == item_name.lower():
+                                                    temp = _model.amount
+                                                    break
+                                        else:
+                                            for _model in user_trade.items:
+                                                if _model.name.lower() == item_name.lower():
+                                                    temp = _model.amount
+                                                    break
+                                        if item_amount + temp > item_model.amount:
+                                            await ctx.send("You do not own this many items.")
+                                        else:
+                                            if msg.author == ctx.author:
+                                                present = False
+                                                for _ in author_trade.items:
+                                                    if _.name.lower() == item_name.lower():
+                                                        _.amount += item_amount
+                                                        present = True
+                                                        break
+                                                if not present:
+                                                    addable_item = item_model.to_dict()
+                                                    addable_item['amount'] = item_amount
+                                                    addable_item = Item(dict_form=addable_item)
+                                                    author_trade.add_items(addable_item)
+                                            else:
+                                                present = False
+                                                for _ in user_trade.items:
+                                                    if _.name.lower() == item_name.lower():
+                                                        _.amount += item_amount
+                                                        present = True
+                                                        break
+                                                if not present:
+                                                    addable_item = item_model.to_dict()
+                                                    addable_item['amount'] = item_amount
+                                                    addable_item = Item(dict_form=addable_item)
+                                                    user_trade.add_items(addable_item)
+                                    except:
+                                        pass
+                        else:
+                            await ctx.send("You cannot add an item after confirming the trade.")
+
+                    if not author_trade.confirmed or not user_trade.confirmed:
+                        des = f'```apache\n{ctx.author.display_name} is Offering\nItems: '
+                        for item in author_trade.items:
+                            des += f"{item} - {item.amount},"
+                        des = des[:-1]
+                        des += f"\nCredits: {author_trade.credits}\nCoins: {author_trade.coins}\nConfirmed: " \
+                               f"{author_trade.cfe}\n```\n```apache" \
+                               f"\n{user.display_name} is Offering\nItems: "
+                        for item in user_trade.items:
+                            des += f"{item} - {item.amount},"
+                        des = des[:-1]
+                        des += f"\nCredits: {user_trade.credits}\nCoins: {user_trade.coins}\nConfirmed: " \
+                               f"{user_trade.cfe}\n```"
+                        embed = discord.Embed(
+                            description=des,
+                            color=discord.Color.orange()
+                        )
+                        await emb.edit(embed=embed)
+                    else:
+                        for _model in author_trade.items:
+                            try:
+                                _model.transfer(user, _model.amount)
+                            except NotEnoughItemsError:
+                                await ctx.send(f"**{ctx.author.display_name}** do not have enough **{_model}**")
+                        for _model in user_trade.items:
+                            try:
+                                _model.transfer(ctx.author, _model.amount)
+                            except NotEnoughItemsError:
+                                await ctx.send(f"**{user.display_name}** do not have enough **{_model}**")
+
+                        if author_trade.credits > 0:
+                            success = await updateBalance(ctx.author.id, "credits", -1 * author_trade.credits)
+                            if success:
+                                await updateBalance(user.id, "credits", author_trade.credits)
+                            else:
+                                await ctx.send(f"**{ctx.author.display_name}** do not have enough credits.")
+                        if author_trade.coins > 0:
+                            success = await updateBalance(ctx.author.id, "wallet", -1 * author_trade.coins)
+                            if success:
+                                await updateBalance(user.id, "wallet", author_trade.coins)
+                            else:
+                                await ctx.send(f"**{ctx.author.display_name}** do not have enough credits.")
+                        if user_trade.credits > 0:
+                            success = await updateBalance(user.id, "credits", -1 * user_trade.credits)
+                            if success:
+                                await updateBalance(ctx.author.id, "credits", user_trade.credits)
+                            else:
+                                await ctx.send(f"**{user.display_name}** do not have enough credits.")
+                        if user_trade.coins > 0:
+                            success = await updateBalance(user.id, "wallet", -1 * user_trade.coins)
+                            if success:
+                                await updateBalance(ctx.author.id, "wallet", user_trade.coins)
+                            else:
+                                await ctx.send(f"**{user.display_name}** do not have enough credits.")
+                        return await ctx.send("Trade ended.")
+
     async def remove(self, ctx, item_id=0):
         if item_id == 0:
             return await ctx.send("Please specify a valid ID")
@@ -65,56 +311,17 @@ class Economy(commands.Cog):
         collection.update_one({'_id': 3}, {'$set': {'items': market['items']}})
         await ctx.send(f"Your {item_name} has been **removed** from the market successfully.")
 
-    @commands.command()
-    async def auction(self, ctx, item="", price=0):
-        if item == "":
-            return await ctx.send("Please specify an item")
-        if price <= 0:
-            return await ctx.send("Please specify a valid price")
-        db = self.cluster['main']
-        collection = db['accounts']
-        accounts = collection.find_one({'_id': 1})
-        if not str(ctx.author.id) in accounts.keys():
-            openAccount(ctx.author.id)
-            return await ctx.send("You don't own any items.")
-        user_bal = accounts[str(ctx.author.id)]
-        for thing in shop:
-            if thing.name.lower() == item.lower():
-                if 'bag' not in user_bal.keys():
-                    return await ctx.send("You don't own any items.")
-                if item.lower() not in user_bal['bag'].keys():
-                    return await ctx.send("You don't this item.")
-                if user_bal['bag'][item.lower()]['amount'] < 1:
-                    return await ctx.send("You don't own this item.")
-                market = db['market'].find_one({'_id': 3})
-                item_id = random.randint(600000000000000000, 999999999999999999)
-                item_model = Item(name=item.lower(), emoji=thing.emoji, item_id=item_id, price=int(price),
-                                  owner=ctx.author.id).to_dict()
-                if 'items' not in market.keys():
-                    market['items'] = {}
-                if item.lower() in market['items'].keys():
-                    market['items'][item.lower()].append(item_model)
-                else:
-                    market['items'][item.lower()] = [item_model]
-                collection = db['market']
-                collection.update_one({'_id': 3}, {'$set': {'items': market['items']}})
-                collection = db['accounts']
-                if user_bal['bag'][item.lower()]['amount'] == 1:
-                    del user_bal['bag'][item.lower()]
-                else:
-                    user_bal['bag'][item.lower()]['amount'] -= 1
-                collection.update_one({'_id': 1}, {'$set': {str(ctx.author.id): user_bal}})
-                await ctx.send(f"Your {item.lower()} has been **uploaded** to the market for `{int(price)}` coins.")
-
     @commands.command(aliases=['balance'])
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def bal(self, ctx, user: discord.Member = None):
-        if user is None: user = ctx.author
+        if user is None:
+            user = ctx.author
 
         bal = balance(user.id)
         embed = discord.Embed(
             title=f"{user.display_name}'s Balance",
-            description=f":dollar:**Wallet** : `{bal['wallet']}` coins\n:bank:**Bank** : `{bal['bank']}` coins\n:tickets:**Credits** : `{bal['credits']}`\n\n",
+            description=f":dollar:**Wallet** : `{bal['wallet']}` coins\n:bank:**Bank** : `{bal['bank']}` coins"
+                        f"\n:tickets:**Credits** : `{bal['credits']}`\n\n",
             color=discord.Color.orange()
         )
         embed.set_footer(text=f"Command ran by {ctx.author.display_name}")
@@ -302,8 +509,10 @@ class Economy(commands.Cog):
             failureProb = float(failureProb / 7)
         failures = [
             f'You tried to rob {user.display_name} but the police caught you. You lost {int(failureProb * 500)} coins',
-            f'You tried to rob {user.display_name} but there was a massive lock on their door. You lost {int(failureProb * 500)} coins',
-            f'You tried to rob {user.display_name} but you forgot to carry your tools. You lost {int(failureProb * 500)} coins'
+            f'You tried to rob {user.display_name} but there was a massive lock on their door.'
+            f' You lost {int(failureProb * 500)} coins',
+            f'You tried to rob {user.display_name} but you forgot to carry your tools. '
+            f'You lost {int(failureProb * 500)} coins'
         ]
         if not success:
             await updateBalance(ctx.author.id, amount=-1 * int(failureProb * 500))
@@ -415,7 +624,8 @@ class Economy(commands.Cog):
 
         heistEmbed = discord.Embed(
             title=f"Bank heist against {user}",
-            description=f"To take part in the above heist react below with the :bank: emoji.\nYou need at least 2000 coins to participate",
+            description=f"To take part in the above heist react below with the :bank: emoji.\n"
+                        f"You need at least 2000 coins to participate",
             color=discord.Color.orange()
         )
         heisters = []
