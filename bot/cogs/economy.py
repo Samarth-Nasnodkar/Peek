@@ -18,6 +18,7 @@ class Economy(commands.Cog):
             "mongodb+srv://dbBot:samarth1709@cluster0.moyjp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 
     @commands.command(aliases=['m'])
+    @commands.cooldown(1, 10, commands.BucketType.user)
     async def market(self, ctx, arg="search", search="", price=0):
         if arg.lower() == "search":
             if search == "":
@@ -69,7 +70,16 @@ class Economy(commands.Cog):
             except ValueError:
                 await ctx.send("Please enter a valid item id")
 
+    @market.error
+    async def market_error(self, ctx, error):
+        if isinstance(error, commands.CommandOnCooldown):
+            msg = 'Command on cooldown for {:.2f}s'.format(error.retry_after)
+            await ctx.send(msg)
+        else:
+            raise error
+
     @commands.command()
+    @commands.cooldown(1, 10, commands.BucketType.user)
     async def trade(self, ctx, user: discord.Member = None):
         if user is None:
             return await ctx.send("Please specify a valid user.")
@@ -283,6 +293,14 @@ class Economy(commands.Cog):
                             else:
                                 await ctx.send(f"**{user.display_name}** do not have enough credits.")
                         return await ctx.send("Trade ended.")
+
+    @trade.error
+    async def trade_error(self, ctx, error):
+        if isinstance(error, commands.CommandOnCooldown):
+            msg = 'Command on cooldown for {:.2f}s'.format(error.retry_after)
+            await ctx.send(msg)
+        else:
+            raise error
 
     async def remove(self, ctx, item_id=0):
         if item_id == 0:
