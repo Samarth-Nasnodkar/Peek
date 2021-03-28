@@ -115,9 +115,12 @@ class Moderation(commands.Cog):
 
     @commands.command()
     async def prefix(self, ctx, prefix=None):
+        if not ctx.author.guild_permissions.manage_guild:
+            return await ctx.send("You do not have necessary permissions to perform this action.")
         if prefix is None:
             return await ctx.send('Please specify a valid prefix')
-
+        if prefix == '>':
+            return await ctx.send("Please choose a prefix other than '>'")
         done = update_prefix(prefix, ctx.guild.id)
         if done:
             return await ctx.send(f"Your prefix successfully changed to {prefix}")
