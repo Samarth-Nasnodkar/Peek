@@ -10,7 +10,7 @@ from pymongo import MongoClient
 from models.errors import *
 from models.trade import Trade
 from os import environ
-from bot.database.workWords import get_work_word
+from database.workWords import get_work_word
 
 
 class Economy(commands.Cog):
