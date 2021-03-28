@@ -21,7 +21,7 @@ class Memes(commands.Cog):
                                        username='CooLDuDE-6_9',
                                        password='samarth1709',
                                        user_agent='AmongUsUnofficial')
-        # self.updateMeme.start()
+        self.updateMeme.start()
 
     @tasks.loop(minutes=30)
     async def updateMeme(self):
