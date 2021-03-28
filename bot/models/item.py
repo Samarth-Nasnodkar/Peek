@@ -2,9 +2,9 @@ from models.errors import *
 import discord
 from pymongo import MongoClient
 import random
+from os import environ
 
-cluster = MongoClient(
-    "mongodb+srv://dbBot:samarth1709@cluster0.moyjp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+cluster = MongoClient(environ.get('mongo_url'))
 
 
 def openAccount(member_id):

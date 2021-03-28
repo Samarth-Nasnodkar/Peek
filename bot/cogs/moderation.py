@@ -6,14 +6,14 @@ from cogs.help import Help
 from bot import update_prefix, get_prefix
 import time
 from pymongo import MongoClient
+from os import environ
 
 
 class Moderation(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.icon = "https://i.imgur.com/x2zK2Fp.gif"
-        self.cluster = MongoClient(
-            "mongodb+srv://dbBot:samarth1709@cluster0.moyjp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+        self.cluster = MongoClient(environ.get('mongo_url'))
 
     @commands.command()
     async def kick(self, ctx, member: discord.Member, *, reason=None):

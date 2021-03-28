@@ -1,9 +1,9 @@
 import discord
 from discord.ext import commands
 from pymongo import MongoClient
+from os import environ
 
-cluster = MongoClient(
-    "mongodb+srv://dbBot:samarth1709@cluster0.moyjp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+cluster = MongoClient(environ.get('mongo_url'))
 
 
 def get_prefix(client, message):
@@ -56,7 +56,7 @@ async def on_message(message):
     await client.process_commands(message)
 
 
-TOKEN = "ODE5OTQ2ODM1NDg1MjYxODI1.YEuA_w.M-YZcG2htlrvSW7fjzrxAWfcQIA"
+TOKEN = environ.get('discord_bot_token')
 client.load_extension("cogs.moderation")
 client.load_extension("cogs.economy")
 client.load_extension('cogs.memes')

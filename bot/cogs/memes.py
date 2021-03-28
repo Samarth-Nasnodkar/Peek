@@ -8,13 +8,13 @@ from io import BytesIO
 import json
 import pymongo
 from pymongo import MongoClient
+from os import environ
 
 
 class Memes(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.cluster = MongoClient(
-            "mongodb+srv://dbBot:samarth1709@cluster0.moyjp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+        self.cluster = MongoClient(environ.get('mongo_url'))
         self.subreddits = ['dankmemes', 'memes', 'PrequelMemes', 'pcmasterrace', 'PewdiepieSubmissions']
         self.reddit = asyncpraw.Reddit(client_id='0bD1UHrRzjDbGQ',
                                        client_secret='9xoApJv0eZeRr1QVGJJulIE5cjXyFg',

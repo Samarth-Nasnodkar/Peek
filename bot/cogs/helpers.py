@@ -3,9 +3,9 @@ from pymongo import MongoClient
 import discord
 import random
 from models.item import Item
+from os import environ
 
-cluster = MongoClient(
-    "mongodb+srv://dbBot:samarth1709@cluster0.moyjp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+cluster = MongoClient(environ.get('mongo_url'))
 
 
 async def auction(ctx, item="", price=0):

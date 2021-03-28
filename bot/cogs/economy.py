@@ -9,13 +9,13 @@ from models.item import Item
 from pymongo import MongoClient
 from models.errors import *
 from models.trade import Trade
+from os import environ
 
 
 class Economy(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.cluster = MongoClient(
-            "mongodb+srv://dbBot:samarth1709@cluster0.moyjp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+        self.cluster = MongoClient(environ.get('mongo_url'))
 
     @commands.command(aliases=['m'])
     @commands.cooldown(1, 10, commands.BucketType.user)
