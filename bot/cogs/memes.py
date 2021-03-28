@@ -90,7 +90,7 @@ class Memes(commands.Cog):
 
         img = Image.open(imgs['electro'])
         draw = ImageDraw.Draw(img)
-        font = ImageFont.truetype('database/fonts/arial.ttf', 80)
+        font = ImageFont.truetype('bot/database/fonts/arial.ttf', 80)
 
         increment = 0
         if len(text) > 26:
@@ -107,8 +107,8 @@ class Memes(commands.Cog):
         else:
             draw.text((800, 130), text, (0, 0, 0), font=font)
 
-        img.save('database/images/electroout.png')
-        await ctx.send(file=discord.File('database/images/electroout.png'))
+        img.save('bot/database/images/electroout.png')
+        await ctx.send(file=discord.File('bot/database/images/electroout.png'))
 
     @commands.command()
     async def unplug(self, ctx, *, text=''):
@@ -120,7 +120,7 @@ class Memes(commands.Cog):
 
         img = Image.open(imgs['unplug'])
         draw = ImageDraw.Draw(img)
-        font = ImageFont.truetype('database/fonts/arial.ttf', 15)
+        font = ImageFont.truetype('bot/database/fonts/arial.ttf', 15)
         increment = 0
         if len(text) > 30:
             txt = ''
@@ -134,8 +134,8 @@ class Memes(commands.Cog):
         else:
             draw.text((375, 30), text, (0, 0, 0), font=font)
 
-        img.save('database/images/unplugout.jpg')
-        await ctx.send(file=discord.File('database/images/unplugout.jpg'))
+        img.save('bot/database/images/unplugout.jpg')
+        await ctx.send(file=discord.File('bot/database/images/unplugout.jpg'))
 
     @commands.command()
     async def boo(self, ctx, *, text=''):
@@ -147,7 +147,7 @@ class Memes(commands.Cog):
 
         img = Image.open(imgs['boo'])
         draw = ImageDraw.Draw(img)
-        font = ImageFont.truetype('database/fonts/arial.ttf', 30)
+        font = ImageFont.truetype('bot/database/fonts/arial.ttf', 30)
         increment = 0
         if len(text) > 16:
             while len(text) > 16:
@@ -161,8 +161,8 @@ class Memes(commands.Cog):
         else:
             draw.text((553, 660), text, (0, 0, 0), font=font)
 
-        img.save('database/images/booout.png')
-        await ctx.send(file=discord.File('database/images/booout.png'))
+        img.save('bot/database/images/booout.png')
+        await ctx.send(file=discord.File('bot/database/images/booout.png'))
 
     @commands.command()
     async def fact(self, ctx, *, text=''):
@@ -174,7 +174,7 @@ class Memes(commands.Cog):
 
         img = Image.open(imgs['fact'])
         draw = ImageDraw.Draw(img)
-        font = ImageFont.truetype('database/fonts/arial.ttf', 30)
+        font = ImageFont.truetype('bot/database/fonts/arial.ttf', 30)
         increment = 0
         if len(text) > 26:
             txt = ''
@@ -188,8 +188,8 @@ class Memes(commands.Cog):
         else:
             draw.text((50, 690), text, (0, 0, 0), font=font)
 
-        img.save('database/images/factout.jpg')
-        await ctx.send(file=discord.File('database/images/factout.jpg'))
+        img.save('bot/database/images/factout.jpg')
+        await ctx.send(file=discord.File('bot/database/images/factout.jpg'))
 
     @commands.command()
     async def bastards(self, ctx, *, text=''):
@@ -201,7 +201,7 @@ class Memes(commands.Cog):
 
         img = Image.open(imgs['bastards'])
         draw = ImageDraw.Draw(img)
-        font = ImageFont.truetype('database/fonts/arial.ttf', 60)
+        font = ImageFont.truetype('bot/database/fonts/arial.ttf', 60)
 
         increment = 0
         if len(text) > 26:
@@ -217,8 +217,8 @@ class Memes(commands.Cog):
         else:
             draw.text((17, 17), text, (0, 0, 0), font=font)
 
-        img.save('database/images/bastardsout.jpg')
-        await ctx.send(file=discord.File('database/images/bastardsout.jpg'))
+        img.save('bot/database/images/bastardsout.jpg')
+        await ctx.send(file=discord.File('bot/database/images/bastardsout.jpg'))
 
     @commands.command()
     async def monster(self, ctx, *, text=''):
@@ -229,7 +229,7 @@ class Memes(commands.Cog):
             return await ctx.send('Your text cannot exceed 60 characters')
         img = Image.open(imgs['monster'])
         draw = ImageDraw.Draw(img)
-        font = ImageFont.truetype('database/fonts/arial.ttf', 20)
+        font = ImageFont.truetype('bot/database/fonts/arial.ttf', 20)
         increment = 0
         if len(text) > 30:
             txt = ''
@@ -243,8 +243,8 @@ class Memes(commands.Cog):
         else:
             draw.text((45, 370), text, (0, 0, 0), font=font)
 
-        img.save('database/images/monsterout.jpg')
-        await ctx.send(file=discord.File('database/images/monsterout.jpg'))
+        img.save('bot/database/images/monsterout.jpg')
+        await ctx.send(file=discord.File('bot/database/images/monsterout.jpg'))
 
     @commands.command()
     async def drake(self, ctx, *, text=''):
@@ -264,7 +264,7 @@ class Memes(commands.Cog):
         draw = ImageDraw.Draw(img)
         t_one = text_one
         t_two = text_two
-        font = ImageFont.truetype('database/fonts/arial.ttf', 60)
+        font = ImageFont.truetype('bot/database/fonts/arial.ttf', 60)
         increment = 0
         if len(t_one) > 14:
             while len(text_one) > 14:
@@ -289,8 +289,8 @@ class Memes(commands.Cog):
         else:
             draw.text((520, 460), t_two, (0, 0, 0), font=font)
 
-        img.save('database/images/drakeout.jpg')
-        await ctx.send(file=discord.File('database/images/drakeout.jpg'))
+        img.save('bot/database/images/drakeout.jpg')
+        await ctx.send(file=discord.File('bot/database/images/drakeout.jpg'))
 
     @commands.command()
     async def sword(self, ctx, *, text=''):
@@ -312,12 +312,12 @@ class Memes(commands.Cog):
 
         img = Image.open(imgs['sword'])
         draw = ImageDraw.Draw(img)
-        font = ImageFont.truetype('database/fonts/arial.ttf', 40)
+        font = ImageFont.truetype('bot/database/fonts/arial.ttf', 40)
         draw.text((132, 73), text_one, (0, 0, 0), font=font)
         draw.text((68, 273), text_two, (0, 0, 0), font=font)
 
-        img.save('database/images/swordout.jpg')
-        await ctx.send(file=discord.File('database/images/swordout.jpg'))
+        img.save('bot/database/images/swordout.jpg')
+        await ctx.send(file=discord.File('bot/database/images/swordout.jpg'))
 
     @commands.command()
     async def announce(self, ctx, *, text=''):
@@ -327,7 +327,7 @@ class Memes(commands.Cog):
         if len(text) > 78:
             return await ctx.send('Your text cannot exceed 78 characters.')
 
-        font = ImageFont.truetype('database/fonts/arial.ttf', 60)
+        font = ImageFont.truetype('bot/database/fonts/arial.ttf', 60)
         img = Image.open(imgs['announce'])
         draw = ImageDraw.Draw(img)
         increment = 0
@@ -343,8 +343,8 @@ class Memes(commands.Cog):
         else:
             draw.text((450, 80), text, (0, 0, 0), font=font)
 
-        img.save('database/images/announceout.png')
-        await ctx.send(file=discord.File('database/images/announceout.png'))
+        img.save('bot/database/images/announceout.png')
+        await ctx.send(file=discord.File('bot/database/images/announceout.png'))
 
     @commands.command()
     async def fbi(self, ctx, *, text=''):
@@ -356,12 +356,12 @@ class Memes(commands.Cog):
 
         img = Image.open(imgs['fbi'])
         draw = ImageDraw.Draw(img)
-        font = ImageFont.truetype('database/fonts/arial.ttf', 60)
+        font = ImageFont.truetype('bot/database/fonts/arial.ttf', 60)
 
         draw.text((45, 450), text, (0, 0, 0), font=font)
 
-        img.save('database/images/fbiout.jpg')
-        await ctx.send(file=discord.File('database/images/fbiout.jpg'))
+        img.save('bot/database/images/fbiout.jpg')
+        await ctx.send(file=discord.File('bot/database/images/fbiout.jpg'))
 
     @commands.command()
     async def worthless(self, ctx, user: discord.Member = None):
@@ -374,8 +374,8 @@ class Memes(commands.Cog):
         pfp = Image.open(data)
         pfp = pfp.resize((231, 231))
         bg.paste(pfp, (304, 166))
-        bg.save('database/images/worthlessout.jpg')
-        await ctx.send(file=discord.File('database/images/worthlessout.jpg'))
+        bg.save('bot/database/images/worthlessout.jpg')
+        await ctx.send(file=discord.File('bot/database/images/worthlessout.jpg'))
 
     @commands.command()
     async def smile(self, ctx, user: discord.Member = None):
@@ -388,8 +388,8 @@ class Memes(commands.Cog):
         pfp = Image.open(data)
         pfp = pfp.resize((120, 120))
         bg.paste(pfp, (150, 20))
-        bg.save('database/images/smileout.jpg')
-        await ctx.send(file=discord.File('database/images/smileout.jpg'))
+        bg.save('bot/database/images/smileout.jpg')
+        await ctx.send(file=discord.File('bot/database/images/smileout.jpg'))
 
     @commands.command()
     async def slap(self, ctx, user: discord.Member = None):
@@ -412,8 +412,8 @@ class Memes(commands.Cog):
         bg.paste(authorPFP, (479, 94))
         bg.paste(userPFP, (815, 334))
 
-        bg.save('database/images/slapout.jpg')
-        await ctx.send(file=discord.File('database/images/slapout.jpg'))
+        bg.save('bot/database/images/slapout.jpg')
+        await ctx.send(file=discord.File('bot/database/images/slapout.jpg'))
 
     @commands.command(aliases=['armour'])
     async def armor(self, ctx, *, text=''):
@@ -425,7 +425,7 @@ class Memes(commands.Cog):
 
         img = Image.open(imgs['armor'])
         draw = ImageDraw.Draw(img)
-        font = ImageFont.truetype('database/fonts/arial.ttf', size=20)
+        font = ImageFont.truetype('bot/database/fonts/arial.ttf', size=20)
         increment = 0
         if len(text) > 20:
             txt = ''
@@ -439,8 +439,8 @@ class Memes(commands.Cog):
         else:
             draw.text((40, 370), text, (0, 0, 0), font=font)
 
-        img.save('database/images/armorout.png')
-        await ctx.send(file=discord.File('database/images/armorout.png'))
+        img.save('bot/database/images/armorout.png')
+        await ctx.send(file=discord.File('bot/database/images/armorout.png'))
 
     @commands.command()
     async def patrick(self, ctx, *, text=''):
@@ -448,7 +448,7 @@ class Memes(commands.Cog):
             return await ctx.send('You need to pass some text.')
 
         img = Image.open(imgs['patrick'])
-        font = ImageFont.truetype('database/fonts/arial.ttf', 40)
+        font = ImageFont.truetype('bot/database/fonts/arial.ttf', 40)
         draw = ImageDraw.Draw(img)
 
         if len(text) > 33:
@@ -468,8 +468,8 @@ class Memes(commands.Cog):
         else:
             draw.text((130, 470), text, (0, 0, 0), font=font)
 
-        img.save('database/images/patrickout.jpg')
-        await ctx.send(file=discord.File('database/images/patrickout.jpg'))
+        img.save('bot/database/images/patrickout.jpg')
+        await ctx.send(file=discord.File('bot/database/images/patrickout.jpg'))
 
     @commands.command()
     async def prison(self, ctx, *, text=''):
@@ -481,7 +481,7 @@ class Memes(commands.Cog):
 
         img = Image.open(imgs['prison'])
         draw = ImageDraw.Draw(img)
-        font = ImageFont.truetype('database/fonts/arial.ttf', 20)
+        font = ImageFont.truetype('bot/database/fonts/arial.ttf', 20)
         increment = 0
 
         if len(text) > 26:
@@ -496,8 +496,8 @@ class Memes(commands.Cog):
         else:
             draw.text((35, 395), text, (0, 0, 0), font=font)
 
-        img.save('database/images/prisonout.png')
-        await ctx.send(file=discord.File('database/images/prisonout.png'))
+        img.save('bot/database/images/prisonout.png')
+        await ctx.send(file=discord.File('bot/database/images/prisonout.png'))
 
     @commands.command()
     async def spongebob(self, ctx, *, text=''):
@@ -505,7 +505,7 @@ class Memes(commands.Cog):
             return await ctx.send('You need to pass some text.')
 
         img = Image.open(imgs['spongebob'])
-        font = ImageFont.truetype('database/fonts/arial.ttf', 30)
+        font = ImageFont.truetype('bot/database/fonts/arial.ttf', 30)
         draw = ImageDraw.Draw(img)
 
         if len(text) > 44:
@@ -525,8 +525,8 @@ class Memes(commands.Cog):
         else:
             draw.text((60, 85), text, (0, 0, 0), font=font)
 
-        img.save('database/images/spongeout.png')
-        await ctx.send(file=discord.File('database/images/spongeout.png'))
+        img.save('bot/database/images/spongeout.png')
+        await ctx.send(file=discord.File('bot/database/images/spongeout.png'))
 
     @commands.command()
     async def shit(self, ctx, *, text=''):
@@ -534,7 +534,7 @@ class Memes(commands.Cog):
             return await ctx.send('You need to pass some text.')
 
         img = Image.open(imgs['shit'])
-        font = ImageFont.truetype('database/fonts/arial.ttf', 15)
+        font = ImageFont.truetype('bot/database/fonts/arial.ttf', 15)
         draw = ImageDraw.Draw(img)
 
         if len(text) > 33:
@@ -554,8 +554,8 @@ class Memes(commands.Cog):
         else:
             draw.text((90, 210), text, (0, 0, 0), font=font)
 
-        img.save('database/images/shitout.jpg')
-        await ctx.send(file=discord.File('database/images/shitout.jpg'))
+        img.save('bot/database/images/shitout.jpg')
+        await ctx.send(file=discord.File('bot/database/images/shitout.jpg'))
 
     @commands.command()
     async def santa(self, ctx, *, text=''):
@@ -563,7 +563,7 @@ class Memes(commands.Cog):
             return await ctx.send('You need to pass some text.')
 
         img = Image.open(imgs['santa'])
-        font = ImageFont.truetype('database/fonts/arial.ttf', 30)
+        font = ImageFont.truetype('bot/database/fonts/arial.ttf', 30)
         draw = ImageDraw.Draw(img)
 
         if len(text) > 72:
@@ -583,8 +583,8 @@ class Memes(commands.Cog):
         else:
             draw.text((40, 475), text, (0, 0, 0), font=font)
 
-        img.save('database/images/santaout.jpg')
-        await ctx.send(file=discord.File('database/images/santaout.jpg'))
+        img.save('bot/database/images/santaout.jpg')
+        await ctx.send(file=discord.File('bot/database/images/santaout.jpg'))
 
 
 def setup(client):
