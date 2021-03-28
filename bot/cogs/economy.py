@@ -81,10 +81,11 @@ class Economy(commands.Cog):
 
     @commands.command()
     async def work(self, ctx):
-        word = scrambleWord(get_work_word())
+        realWord = get_work_word()
+        word = scrambleWord(realWord)
         await ctx.send(f"Your task is to Un-Scramble the following word\n**{word}**")
         def check(message):
-            return message.author == ctx.author and message.channel == ctx.channel and message.content.lower == word.lower()
+            return message.author == ctx.author and message.channel == ctx.channel and message.content.lower == realWord.lower()
         try:
             msg = await self.client.wait_for('message', timeout=60.0, check=check)
         except TimeoutError:
