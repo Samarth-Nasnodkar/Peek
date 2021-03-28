@@ -6,3 +6,4 @@ pyfiglet
 dblpy
 asyncpraw
 pymongo
+dnspython
