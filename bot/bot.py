@@ -41,6 +41,9 @@ client.remove_command('help')
 async def on_ready():
     print("Bot online")
 
+@client.command()
+async def ping(ctx):
+    await ctx.send(f'Pong! In {round(client.latency * 1000)}ms')
 
 @client.event
 async def on_message(message):
