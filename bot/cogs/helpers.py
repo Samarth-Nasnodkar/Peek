@@ -8,6 +8,18 @@ from os import environ
 cluster = MongoClient(environ.get('mongo_url'))
 
 
+def scrambleWord(word):
+    word = list(word)
+    limit = len(word)
+    scrambled = ''
+    while len(scrambled) < limit:
+        random_index = random.randint(0, len(word) - 1)
+        scrambled += word[random_index]
+        word.pop(random_index)
+
+    return scrambled
+
+
 async def auction(ctx, item="", price=0):
     if item == "":
         return await ctx.send("Please specify an item")

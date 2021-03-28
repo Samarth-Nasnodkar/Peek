@@ -10,6 +10,7 @@ from pymongo import MongoClient
 from models.errors import *
 from models.trade import Trade
 from os import environ
+from bot.database.workWords import get_work_word
 
 
 class Economy(commands.Cog):
@@ -77,6 +78,28 @@ class Economy(commands.Cog):
             await ctx.send(msg)
         else:
             raise error
+
+    @commands.command()
+    async def work(self, ctx):
+        word = get_work_word()
+        await ctx.send(f"Your task is to Un-Scramble the following word\n**{word}**")
+        def check(message):
+            return message.author == ctx.author and message.channel == ctx.channel and msg.content.lower == word.lower()
+        try:
+            msg = await self.client.wait_for('message', timeout=60.0, check=check)
+        except TimeoutError:
+            return await ctx.send("You took too long to respond. You got paid nothing.")
+        else:
+            collection = self.cluster['main']['accounts']
+            accounts = collection.find_one({'_id': 1})
+            if str(ctx.author.id) not in accounts.keys():
+                openAccount(ctx.author.id)
+            
+            accounts = collection.find_one({'_id': 1})
+            salary = random.randint(500, 5000)
+            accounts[str(ctx.author.id)]['wallet'] += salary
+            collection.update_one({'_id': 1}, {'$set': {str(ctx.author.id): accounts[str(ctx.author.id)]}})
+            await ctx.send(f"You earned **{salary}** coins.")
 
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)

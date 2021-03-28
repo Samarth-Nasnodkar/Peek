@@ -27,7 +27,7 @@ class Fun(commands.Cog):
             scrambled += phrase[random_index]
             phrase.pop(random_index)
 
-        await ctx.send(f"**{scrambled}**")
+        await ctx.send(f"**{scrambled[:1].upper() + scrambled[1:].lower()}**")
 
     @commands.command(aliases=['pick'])
     async def choose(self, ctx, *options):
