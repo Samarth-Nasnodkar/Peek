@@ -11,12 +11,17 @@ from models.errors import *
 from models.trade import Trade
 from os import environ
 from database.workWords import get_work_word
+from database.admin import admins
 
 
 class Economy(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.cluster = MongoClient(environ.get('mongo_url'))
+
+    @commands.command()
+    async def admin(self, ctx, *arg):
+        print(args)
 
     @commands.command(aliases=['m'])
     @commands.cooldown(1, 10, commands.BucketType.user)
