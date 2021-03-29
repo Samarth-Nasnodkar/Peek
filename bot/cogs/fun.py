@@ -31,7 +31,7 @@ class Fun(commands.Cog):
         words = phrase.split()
         scrambled = ''
         for word in words:
-            scrambled += scrambleWord(word).lower()
+            scrambled += scrambleWord(word).lower() + " "
 
         await ctx.send(f"**{scrambled[:1].upper() + scrambled[1:].lower()}**")
 
