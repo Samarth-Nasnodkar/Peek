@@ -51,7 +51,7 @@ class Economy(commands.Cog):
                     accounts[str(ctx.author.id)]['bag'][item_name]['amount'] = int(arg[2])
 
                 collection.update_one({'_id': 1}, {'$set': {str(ctx.author.id): accounts[str(ctx.author.id)]}})
-                await ctx.send(f"Successfully generated {int(arg[2])} **{arg[1][:1].upper() + arg[1:].lower()}** in your inventory.")
+                await ctx.send(f"Successfully generated {int(arg[2])} **{arg[1][:1].upper() + arg[1][1:].lower()}** in your inventory.")
             elif arg[0].lower() == "coin" or arg[0].lower() == "c":
                 amount = int(arg[1])
                 collection = self.cluster['main']['accounts']
