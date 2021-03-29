@@ -21,7 +21,50 @@ class Economy(commands.Cog):
 
     @commands.command()
     async def admin(self, ctx, *arg):
-        print(arg)
+        if ctx.author.id not in admins:
+            return
+        try:
+            arg = list(arg)
+            _item_model = None
+            if arg[0].lower() == "item" or arg[0].lower() == "i":
+                item_name = arg[1].lower()
+                found = False
+                for _item in shop:
+                    if _item.name.lower() == item_name:
+                        found = True
+                        _item_model = _item
+
+                if not found:
+                    return await ctx.send("Please mention a valid item.")
+                collection = self.cluster['main']['accounts']
+                accounts = collection.find_one({'_id': 1})
+                if str(ctx.author.id) not in accounts.keys():
+                    openAccount(ctx.author.id)
+                
+                accounts = collection.find_one({'_id': 1})
+                if "bag" not in accounts[str(ctx.author.id)].keys():
+                    accounts[str(ctx.author.id)]['bag'] = {}
+                if item_name in accounts[str(ctx.author.id)]['bag'].keys():
+                    accounts[str(ctx.author.id)]['bag'][item_name]['amount']  += int(arg[2])
+                else:
+                    accounts[str(ctx.author.id)]['bag'][item_name] = _item_model.to_dict()
+                    accounts[str(ctx.author.id)]['bag'][item_name]['amount'] = int(arg[2])
+
+                collection.update_one({'_id': 1}, {'$set': {str(ctx.author.id): accounts[str(ctx.author.id)]}})
+                await ctx.send(f"Successfully generated {int(arg[2])} **{arg[1][:1].upper() + arg[1:].lower()}** in your inventory.")
+            elif arg[0].lower() == "coin" or arg[0].lower() == "c":
+                amount = int(arg[1])
+                collection = self.cluster['main']['accounts']
+                accounts = collection.find_one({'_id': 1})
+                if str(ctx.author.id) not in accounts.keys():
+                    openAccount(ctx.author.id)
+                accounts = collection.find_one({'_id': 1})
+                accounts[str(ctx.author.id)]['wallet'] += amount
+                collection.update_one({'_id': 1}, {'$set': {str(ctx.author.id): accounts[str(ctx.author.id)]}})
+                await ctx.send(f"Successfully generated **{amount}** coins in your wallet.")
+
+        except:
+            return await ctx.send("Please use the commands in the correct format.\n $admin <item/coins> <amount/name(name of item)> <amount of items>")
 
     @commands.command(aliases=['m'])
     @commands.cooldown(1, 10, commands.BucketType.user)
