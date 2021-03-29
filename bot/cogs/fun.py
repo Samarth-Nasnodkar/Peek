@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from cogs.helpers import scrambleWord
 import random
 
 
@@ -18,14 +19,19 @@ class Fun(commands.Cog):
         await ctx.send(content)
 
     @commands.command()
+    async def pp(self, ctx, user: discord.Member = None):
+        if user is None:
+            user = ctx.author
+
+        ppLength = random.randint(1, 20)
+        await ctx.send(f"{user.display_name}'s pp => 8{'=' * ppLength}D")
+
+    @commands.command()
     async def scramble(self, ctx, phrase):
-        phrase = list(phrase)
-        limit = len(phrase)
+        words = phrase.split()
         scrambled = ''
-        while len(scrambled) < limit:
-            random_index = random.randint(0, len(phrase) - 1)
-            scrambled += phrase[random_index]
-            phrase.pop(random_index)
+        for word in words:
+            scrambled += scrambleWord(word).lower()
 
         await ctx.send(f"**{scrambled[:1].upper() + scrambled[1:].lower()}**")
 
