@@ -159,6 +159,7 @@ class Economy(commands.Cog):
                             _market['items'][_item].pop(i)
                             collection.update_one({'_id': 3}, {'$set': {'items': _market['items']}})
                             coll.update_one({'_id': 1}, {'$set': {str(ctx.author.id): accounts[str(ctx.author.id)]}})
+                            coll.update_one({'_id': 1}, {'$set': {str(_item_model['owner']): accounts[_item_model['owner'])]}})
                             return await ctx.send(f"You **bought** a {_item} from the market for **{_item_model['price']}**")
                 
                 if not found:
