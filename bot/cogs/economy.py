@@ -149,12 +149,13 @@ class Economy(commands.Cog):
                             if "bag" not in accounts[str(ctx.author.id)].keys():
                                 accounts[str(ctx.author.id)]['bag'] = {}
                             
-                            if _item_model.name.lower() not in accounts[str(ctx.author.id)]['bag'].keys():
+                            if _item_model['name'].lower() not in accounts[str(ctx.author.id)]['bag'].keys():
                                 accounts[str(ctx.author.id)]['bag'][_item] = _item_model
                             else:
                                 accounts[str(ctx.author.id)]['bag'][_item]['amount'] += 1
                             
                             accounts[str(ctx.author.id)]['wallet'] -= _item_model['price']
+                            accounts[str(_item_model['owner'])]['wallet'] += _item_model['price']
                             _market['items'][_item].pop(i)
                             collection.update_one({'_id': 3}, {'$set': {'items': _market['items']}})
                             coll.update_one({'_id': 1}, {'$set': {str(ctx.author.id): accounts[str(ctx.author.id)]}})
