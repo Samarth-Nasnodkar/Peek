@@ -21,7 +21,7 @@ class Economy(commands.Cog):
 
     @commands.command()
     async def admin(self, ctx, *arg):
-        print(args)
+        print(arg)
 
     @commands.command(aliases=['m'])
     @commands.cooldown(1, 10, commands.BucketType.user)
