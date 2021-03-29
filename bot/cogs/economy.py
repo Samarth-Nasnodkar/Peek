@@ -730,7 +730,7 @@ class Economy(commands.Cog):
             if str(reaction.emoji) == '🏦':
                 users = await reaction.users().flatten()
                 for usr in users:
-                    if usr.id != 819946835485261825 and balance(usr.id) > 2000:
+                    if usr.id != 819946835485261825 and balance(usr.id)['wallet'] > 2000:
                         heisters.append(usr.id)
                         text += f"**{usr.name}** , "
 
