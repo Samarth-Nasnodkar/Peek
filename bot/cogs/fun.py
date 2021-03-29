@@ -27,7 +27,7 @@ class Fun(commands.Cog):
         await ctx.send(f"{user.display_name}'s pp => 8{'=' * ppLength}D")
 
     @commands.command()
-    async def scramble(self, ctx, phrase):
+    async def scramble(self, ctx, *, phrase):
         words = phrase.split()
         scrambled = ''
         for word in words:
