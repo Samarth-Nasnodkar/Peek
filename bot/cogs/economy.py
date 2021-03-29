@@ -132,7 +132,7 @@ class Economy(commands.Cog):
                 _market = collection.find_one({'_id': 3})
                 found = False
                 for _item in _market['items']:
-                    _items = _market[_item]
+                    _items = _market['items'][_item]
                     for i in range(len(_items)):
                         _item_model = _items[i]
                         if _item_model['item_id'] == ID:
@@ -155,7 +155,7 @@ class Economy(commands.Cog):
                                 accounts[str(ctx.author.id)]['bag'][_item]['amount'] += 1
                             
                             accounts[str(ctx.author.id)]['wallet'] -= _item_model['price']
-                            _market[_item].pop(i)
+                            _market['items'][_item].pop(i)
                             collection.update_one({'_id': 3}, {'$set': {'items': _market['items']}})
                             coll.update_one({'_id': 1}, {'$set': {str(ctx.author.id): accounts[str(ctx.author.id)]}})
                             return await ctx.send(f"You **bought** a {_item} from the market for **{_item_model['price']}**")
