@@ -118,6 +118,52 @@ class Economy(commands.Cog):
                 await self.remove(ctx, item_id=int(search))
             except ValueError:
                 await ctx.send("Please enter a valid item id")
+        elif arg.lower() == 'buy' or arg.lower() == 'b':
+            ID = 0
+            try:
+                ID = int(search)
+            except ValueError:
+                return await ctx.send("Please provide the correct ID.")
+            else:
+                if ID <= 0:
+                    return await ctx.send("Please provide the correct ID.")
+                
+                collection = self.cluster['main']['market']
+                _market = collection.find_one({'_id': 3})
+                found = False
+                for _item in _market['items']:
+                    _items = _market[_item]
+                    for i in range(len(_items)):
+                        _item_model = _items[i]
+                        if _item_model['item_id'] == ID:
+                            if _item_model['owner'] == ctx.author.id:
+                                return await ctx.send("You cannot buy an item you own.")
+                            
+                            found = True
+                            user_bal = balance(ctx.author.id)
+                            if user_bal['wallet'] < _item_model['price']:
+                                return await ctx.send("You do not have enough money to buy this item.")
+
+                            coll = self.cluster['main']['accounts']
+                            accounts = coll.find_one({'_id': 1})
+                            if "bag" not in accounts[str(ctx.author.id)].keys():
+                                accounts[str(ctx.author.id)]['bag'] = {}
+                            
+                            if _item_model.name.lower() not in accounts[str(ctx.author.id)]['bag'].keys():
+                                accounts[str(ctx.author.id)]['bag'][_item] = _item_model
+                            else:
+                                accounts[str(ctx.author.id)]['bag'][_item]['amount'] += 1
+                            
+                            accounts[str(ctx.author.id)]['wallet'] -= _item_model['price']
+                            _market[_item].pop(i)
+                            collection.update_one({'_id': 3}, {'$set': {'items': _market['items']}})
+                            coll.update_one({'_id': 1}, {'$set': {str(ctx.author.id): accounts[str(ctx.author.id)]}})
+                            return await ctx.send(f"You **bought** a {_item} from the market for **{_item_model['price']}**")
+                
+                if not found:
+                    return await ctx.send("Item not found. Please try again.")
+
+
 
     @market.error
     async def market_error(self, ctx, error):
