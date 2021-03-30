@@ -45,10 +45,13 @@ class Economy(commands.Cog):
                 if "bag" not in accounts[str(ctx.author.id)].keys():
                     accounts[str(ctx.author.id)]['bag'] = {}
                 if item_name in accounts[str(ctx.author.id)]['bag'].keys():
-                    accounts[str(ctx.author.id)]['bag'][item_name]['amount']  += int(arg[2])
+                    accounts[str(ctx.author.id)]['bag'][item_name]['amount'] += int(arg[2])
                 else:
                     accounts[str(ctx.author.id)]['bag'][item_name] = _item_model.to_dict()
                     accounts[str(ctx.author.id)]['bag'][item_name]['amount'] = int(arg[2])
+                    accounts[str(ctx.author.id)]['bag'][item_name]['owner'] = ctx.author.id
+                    accounts[str(ctx.author.id)]['bag'][item_name]['item_id'] = random.randint(600000000000000000,
+                                                                                               999999999999999999)
 
                 collection.update_one({'_id': 1}, {'$set': {str(ctx.author.id): accounts[str(ctx.author.id)]}})
                 await ctx.send(f"Successfully generated {int(arg[2])} **{arg[1][:1].upper() + arg[1][1:].lower()}** in your inventory.")
