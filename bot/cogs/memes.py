@@ -16,11 +16,11 @@ class Memes(commands.Cog):
         self.client = client
         self.cluster = MongoClient(environ.get('mongo_url'))
         self.subreddits = ['dankmemes', 'memes', 'PrequelMemes', 'pcmasterrace', 'PewdiepieSubmissions']
-        self.reddit = asyncpraw.Reddit(client_id='R_PyTZLL1EMatg',
-                                       client_secret='k_Hj2HG9ZWRE843H1cLF9k5aCfKP7A',
-                                       username='I_BANG_MOMS',
-                                       password='samarth1709',
-                                       user_agent='Peeko')
+        self.reddit = asyncpraw.Reddit(client_id=environ.get('r_client_id'),
+                                       client_secret=environ.get('r_client_secret'),
+                                       username=environ.get('r_username'),
+                                       password=environ.get('r_password'),
+                                       user_agent=environ.get('r_ua'))
         self.updateMeme.start()
 
     @tasks.loop(minutes=30)
